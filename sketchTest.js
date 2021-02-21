@@ -1,7 +1,7 @@
-let rows = 7;
-let cols = 7;
-let height = 600;
-let width = 600;
+let rows = 8;
+let cols = 15;
+let height = 700;
+let width = 1500;
 let w;
 let h;
 let grid = new Array(rows);

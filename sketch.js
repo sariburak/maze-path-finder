@@ -1,14 +1,14 @@
 //Canvas variables
-var rows = 10;
-var cols = 10;
-var w;
-var h;
+let rows = 10;
+let cols = 10;
+let w;
+let h;
 //Grid vardiables
-var grid = new Array(rows);
+let grid = new Array(rows);
 
 //algo variables
-var current;
-var stack = [];
+let current;
+let stack = [];
 
 
 //Cell defitinion
@@ -26,8 +26,8 @@ function Cell(i, j) {
 
     //Button for debugging
     // this.button = createButton("get");
-    // var offsetX = w / 2 - this.button.size().width / 2;
-    // var offsetY = h / 2 - this.button.size().height / 2;
+    // let offsetX = w / 2 - this.button.size().width / 2;
+    // let offsetY = h / 2 - this.button.size().height / 2;
     // this.button.position(this.x + offsetX, this.y + offsetY);
     // this.button.mousePressed(_ => {
     //     console.log(this);
@@ -58,13 +58,13 @@ function setup() {
     h = height / rows;
 
     //create grid
-    for (var i = 0; i < rows; i++) {
+    for (let i = 0; i < rows; i++) {
         grid[i] = (new Array(cols));
     }
 
     //create cells
-    for (var i = 0; i < rows; i++) {
-        for (var j = 0; j < cols; j++) {
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
             grid[i][j] = new Cell(i, j);
         }
     }
@@ -72,10 +72,35 @@ function setup() {
     //setup for maze creation
     current = grid[0][0];
 
+    //create maze
+    while (true) {
+        current.visited = true;
+        let next = checkForNext(current);
+        if (next) {
+            //need to check if this nodes causes a connection
+            if (checkForConnection(next)) {
+                next.visited = true;
+                next.isWall = true;
+            } else {
+                stack.push(current);
+                current = next;
+            }
+
+        } else if (stack.length > 0) {
+            current = stack.pop();
+        } else {
+            //Done?
+            console.log("Done!");
+            break;
+        }
+    }
+
+    //set final to not wall
+    grid[rows - 1][cols - 1].isWall = false;
 }
 
 function checkForNext(current) {
-    var neighbors = [];
+    let neighbors = [];
 
     //check for top neighbor
     if (current.i > 0 && !grid[current.i - 1][current.j].visited && !grid[current.i - 1][current.j].isWall) {
@@ -129,31 +154,13 @@ function checkForConnection(current) {
 function draw() {
 
     background(51);
-    for (var i = 0; i < rows; i++) {
-        for (var j = 0; j < cols; j++) {
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
             grid[i][j].show(color(10, 100, 10, 100));
         }
     }
 
 
-    current.visited = true;
-    let next = checkForNext(current);
-    if (next) {
-        //need to check if this nodes causes a connection
-        if (checkForConnection(next)) {
-            next.visited = true;
-            next.isWall = true;
-        } else {
-            stack.push(current);
-            current = next;
-        }
 
-    } else if (stack.length > 0) {
-        current = stack.pop();
-    } else {
-        //Done?
-        console.log("Done!");
-        noLoop();
-    }
 
 }
