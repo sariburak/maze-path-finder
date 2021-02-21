@@ -1,7 +1,7 @@
-let rows = 10;
-let cols = 20;
+let rows = 7;
+let cols = 7;
 let height = 600;
-let width = 1200;
+let width = 600;
 let w;
 let h;
 let grid = new Array(rows);
@@ -43,13 +43,17 @@ function Cell(i, j) {
     this.x = j * w;
     this.y = i * h;
 
+    this.blocked = false;
+
     this.buttonEnter = new DisplayButton("enter");
     this.buttonExit = new DisplayButton("exit");
+    this.buttonBlock = new DisplayButton("block");
+    this.buttonUnblock = new DisplayButton("ub")
 
     let offsetX = w / 2 - this.buttonEnter.size().width / 2;
     let offsetY = h / 2 - this.buttonEnter.size().height / 2;
 
-    this.buttonEnter.position(this.x + offsetX, this.y + offsetY);
+    this.buttonEnter.position(this.x + offsetX, this.y + offsetY - this.buttonEnter.size().height / 2);
     // this.buttonEnter.resize(w / 4, h / 4);
     this.buttonEnter.mousePressed(() => {
         this.buttonEnter.hide();
@@ -57,15 +61,35 @@ function Cell(i, j) {
         // console.log(this);
     });
 
-    this.buttonExit.position(this.x + offsetX, this.y + offsetY);
+    this.buttonExit.position(this.x + offsetX, this.y + offsetY - this.buttonEnter.size().height / 2);
     this.buttonExit.mousePressed(() => {
         this.buttonExit.hide();
         this.buttonEnter.show();
     })
     this.buttonExit.hide();
 
+    this.buttonBlock.position(this.x + offsetX, this.y + offsetY + this.buttonEnter.size().height / 2);
+    this.buttonBlock.mousePressed(() => {
+        this.buttonUnblock.show();
+        this.buttonBlock.hide();
+        this.buttonExit.hide();
+        this.buttonEnter.hide();
+        this.blocked = true;
+    });
+
+
+    this.buttonUnblock.position(this.x + offsetX, this.y + offsetY);
+    this.buttonUnblock.mousePressed(() => {
+        this.buttonBlock.show();
+        this.buttonUnblock.hide();
+        this.buttonEnter.show();
+        this.blocked = false;
+    });
+    this.buttonUnblock.hide();
     this.show = function() {
-        if (!this.buttonEnter.hidden) {
+        if (this.blocked) {
+            fill(51);
+        } else if (!this.buttonEnter.hidden) {
             fill(color(0, 0, 255, 100));
         } else {
             fill(color(0, 255, 0, 100));
