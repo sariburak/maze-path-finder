@@ -1,6 +1,6 @@
 //Canvas variables
-let rows = 10;
-let cols = 10;
+let rows = 50;
+let cols = 50;
 let w;
 let h;
 //Grid vardiables
@@ -9,6 +9,11 @@ let grid = new Array(rows);
 //algo variables
 let current;
 let stack = [];
+
+let openSet = [];
+let closedSet = [];
+let end;
+
 
 
 //Cell defitinion
@@ -23,6 +28,12 @@ function Cell(i, j) {
     //Top-Right-Bottom-Left
     this.isWall = false;
     this.visited = false;
+
+    //for path findgin
+    this.h = Infinity;
+    this.f = Infinity;
+    this.g = Infinity;
+    this.cameFrom = undefined;
 
     //Button for debugging
     // this.button = createButton("get");
@@ -39,9 +50,9 @@ function Cell(i, j) {
         if (this.isWall) {
             fill(51);
         } else if (!this.visited) {
-            fill(col);
-        } else {
             fill(color(218, 112, 214, 100));
+        } else {
+            fill((col));
         }
         noStroke();
         rect(this.x, this.y, w, h);
@@ -56,7 +67,6 @@ function setup() {
     createCanvas(600, 600);
     w = width / cols;
     h = height / rows;
-
     //create grid
     for (let i = 0; i < rows; i++) {
         grid[i] = (new Array(cols));
@@ -97,6 +107,12 @@ function setup() {
 
     //set final to not wall
     grid[rows - 1][cols - 1].isWall = false;
+
+    //setup for pathfinding
+    openSet.push(grid[0][0]);
+    grid[0][0].g = 0;
+    end = grid[rows - 1][cols - 1];
+    // grid[0][0].f =
 }
 
 function checkForNext(current) {
@@ -151,6 +167,51 @@ function checkForConnection(current) {
     return count >= 2;
 }
 
+function heuristic(cell) {
+    return Math.abs(cell.i - rows) + Math.abs(cell.j - cols);
+}
+
+function getLowestFScore() {
+    let lowest = 0;
+    for (let i = 0; i < openSet.length; i++) {
+        if (openSet[lowest] > openSet[i]) {
+            lowest = i;
+        }
+    }
+    return openSet.splice(lowest, 1)[0];
+}
+
+function getNeighbors(cell) {
+    let neighbors = [];
+    if (current.i > 0 && !grid[current.i - 1][current.j].isWall) {
+        //check for top
+        neighbors.push(grid[current.i - 1][current.j]);
+    }
+    if (current.i < rows - 1 && !grid[current.i + 1][current.j].isWall) {
+        //check for bottom
+        neighbors.push(grid[current.i + 1][current.j]);
+    }
+    if (current.j > 0 && !grid[current.i][current.j - 1].isWall) {
+        //check for left
+        neighbors.push(grid[current.i][current.j - 1]);
+    }
+    if (current.j < cols - 1 && !grid[current.i][current.j + 1].isWall) {
+        //check for right
+        neighbors.push(grid[current.i][current.j + 1]);
+    }
+    return neighbors;
+}
+
+function reconstruct_path(cell) {
+    let path = [];
+    let current = cell;
+    while (current) {
+        path.push(current);
+        current = current.cameFrom;
+    }
+    return path;
+}
+
 function draw() {
 
     background(51);
@@ -160,7 +221,40 @@ function draw() {
         }
     }
 
+    if (openSet.length > 0) {
+        current = getLowestFScore();
+        closedSet.push(current);
+        if (current === end) {
+            //DONE
+            console.log("Found the path");
+            noLoop();
+        }
+        let neigbors = getNeighbors(current);
+        neigbors.forEach(el => {
+            let tmp = current.g + 1;
+            if (tmp < el.g) {
+                el.cameFrom = current;
+                el.g = tmp;
+                el.f = el.g + heuristic(el);
+                if (!openSet.includes(el)) {
+                    openSet.push(el);
+                }
+            }
+        });
+    }
 
+    for (let i = 0; i < openSet.length; i++) {
+        openSet[i].show(color(255, 255, 255, 100));
+    }
+
+    for (let i = 0; i < closedSet.length; i++) {
+        closedSet[i].show(color(255, 222, 173, 100));
+    }
+
+    let path = reconstruct_path(current);
+    for (let i = 0; i < path.length; i++) {
+        path[i].show(color(0, 0, 255, 100));
+    }
 
 
 }
